@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from http import HTTPStatus
 from typing import Annotated, Any
 
@@ -37,7 +37,7 @@ EXAMPLE_STATUS_UPDATES = {
     "Default": {
         "value": {
             1: {
-                str(datetime.now(timezone.utc)): {
+                str(datetime.now(UTC)): {
                     "Status": "Killed",
                     "MinorStatus": "Marked as killed",
                     "ApplicationStatus": "Job was killed by user",
@@ -45,7 +45,7 @@ EXAMPLE_STATUS_UPDATES = {
                 }
             },
             2: {
-                str(datetime.now(timezone.utc)): {
+                str(datetime.now(UTC)): {
                     "Status": "Failed",
                     "MinorStatus": "Timeout",
                 }
@@ -248,13 +248,13 @@ EXAMPLE_METADATA = {
         "value": {
             1: {
                 "UserPriority": 2,
-                "HeartBeatTime": str(datetime.now(timezone.utc)),
+                "HeartBeatTime": str(datetime.now(UTC)),
                 "Status": "Done",
                 "Site": "Meyrin",
             },
             2: {
                 "UserPriority": 1,
-                "HeartBeatTime": str(datetime.now(timezone.utc)),
+                "HeartBeatTime": str(datetime.now(UTC)),
                 "JobType": "AnotherType",
             },
         }

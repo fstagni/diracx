@@ -3,7 +3,7 @@ from __future__ import annotations
 import fcntl
 import os
 import stat
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -42,7 +42,7 @@ def test_dotenv_files_from_environment(monkeypatch):
 
 TOKEN_RESPONSE_DICT = {
     "access_token": "test_token",
-    "expires_in": int((datetime.now(tz=timezone.utc) + timedelta(days=1)).timestamp()),
+    "expires_in": int((datetime.now(tz=UTC) + timedelta(days=1)).timestamp()),
     "token_type": "Bearer",
     "refresh_token": "test_refresh",
 }

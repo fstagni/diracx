@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import secrets
+from collections.abc import AsyncGenerator, Generator
 from datetime import timedelta
 from io import BytesIO
-from typing import AsyncGenerator, Generator
 
 import botocore.exceptions
 import freezegun

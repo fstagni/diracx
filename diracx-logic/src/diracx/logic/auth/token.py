@@ -5,7 +5,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import cast
 
 from joserfc import jwt
@@ -177,7 +177,7 @@ async def get_oidc_token_info_from_refresh_flow(
 
     # Get the remaining time in minutes before the token expires
     remaining_minutes = (
-        datetime.fromtimestamp(exp, timezone.utc) - datetime.now(timezone.utc)
+        datetime.fromtimestamp(exp, UTC) - datetime.now(UTC)
     ).total_seconds() / 60
 
     # Check if the refresh token was obtained from the legacy_exchange endpoint
@@ -407,9 +407,7 @@ async def get_device_flow(auth_db: AuthDB, device_code: str, max_validity: int):
     """Get the device flow from the DB and check few parameters before returning it."""
     res = await auth_db.get_device_flow(device_code)
 
-    if res["CreationTime"].replace(tzinfo=timezone.utc) < substract_date(
-        seconds=max_validity
-    ):
+    if res["CreationTime"].replace(tzinfo=UTC) < substract_date(seconds=max_validity):
         raise InvalidCredentialsError("Device code expired")
 
     if res["Status"] == FlowStatus.READY:

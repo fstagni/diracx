@@ -4,7 +4,7 @@ import base64
 import hashlib
 import json
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -578,7 +578,7 @@ async def test_refresh_token_expired(
 
     # Modify the expiration time (utc now - 5 hours)
     refresh_payload["exp"] = int(
-        (datetime.now(tz=timezone.utc) - timedelta(hours=5)).timestamp()
+        (datetime.now(tz=UTC) - timedelta(hours=5)).timestamp()
     )
 
     # Encode it differently
@@ -615,9 +615,7 @@ async def test_access_token_expired(
     )
 
     # Modify the expiration time (utc now - 5 hours)
-    access_payload["exp"] = int(
-        (datetime.now(tz=timezone.utc) - timedelta(hours=5)).timestamp()
-    )
+    access_payload["exp"] = int((datetime.now(tz=UTC) - timedelta(hours=5)).timestamp())
 
     # Encode it differently
     new_access_token = create_token(access_payload, test_auth_settings)
@@ -725,7 +723,7 @@ async def test_refresh_token_rotated_expiration_time(
 
     # Modify the expiration time (utc now + 5 hours)
     refresh_payload["exp"] = int(
-        (datetime.now(tz=timezone.utc) + timedelta(hours=5)).timestamp()
+        (datetime.now(tz=UTC) + timedelta(hours=5)).timestamp()
     )
 
     # Encode it differently
@@ -812,7 +810,7 @@ async def test_keystore(test_client):
 
     payload = {
         "jti": "49ecc171-20be-5b88-0d65-26012c07f397",
-        "exp": (datetime.now(tz=timezone.utc) + timedelta(hours=1)).timestamp(),
+        "exp": (datetime.now(tz=UTC) + timedelta(hours=1)).timestamp(),
         "legacy_exchange": False,
     }
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from DIRACCommon.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 from DIRACCommon.Core.Utilities.ReturnValues import returnValueOrRaise
@@ -134,7 +134,7 @@ async def submit_jdl_jobs(
         f'Jobs added to the JobDB", "{submitted_job_ids} for {user_info.preferred_username}/{user_info.dirac_group}'
     )
 
-    job_created_time = datetime.now(timezone.utc)
+    job_created_time = datetime.now(UTC)
     await job_logging_db.insert_records(
         [
             JobLoggingRecord(
@@ -201,8 +201,8 @@ async def create_jdl_jobs(jobs: list[JobSubmissionSpec], job_db: JobDB, config: 
             job_id = job_id_task.result()
             job_attrs = {
                 "JobID": job_id,
-                "LastUpdateTime": datetime.now(tz=timezone.utc),
-                "SubmissionTime": datetime.now(tz=timezone.utc),
+                "LastUpdateTime": datetime.now(tz=UTC),
+                "SubmissionTime": datetime.now(tz=UTC),
                 "Owner": job.owner,
                 "OwnerGroup": job.owner_group,
                 "VO": job.vo,

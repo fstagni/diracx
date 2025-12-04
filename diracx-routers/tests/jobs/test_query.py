@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from http import HTTPStatus
 
 import pytest
@@ -202,7 +202,7 @@ def test_insert_malformed_jdl(normal_user_client):
         minute=0,
         second=0,
         microsecond=123456,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 )
 def test_insert_and_search_by_datetime(normal_user_client):
@@ -661,13 +661,13 @@ async def test_get_job_status_history(
 
     new_status = JobStatus.CHECKING.value
     new_minor_status = "JobPath"
-    before = datetime.now(timezone.utc)
+    before = datetime.now(UTC)
 
     r = normal_user_client.patch(
         "/api/jobs/status",
         json={
             valid_job_id: {
-                datetime.now(tz=timezone.utc).isoformat(): {
+                datetime.now(tz=UTC).isoformat(): {
                     "Status": new_status,
                     "MinorStatus": new_minor_status,
                 }
@@ -675,7 +675,7 @@ async def test_get_job_status_history(
         },
     )
 
-    after = datetime.now(timezone.utc)
+    after = datetime.now(UTC)
 
     assert r.status_code == 200, r.json()
     assert r.json()["success"][str(valid_job_id)]["Status"] == new_status

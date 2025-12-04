@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import UUID as StdUUID  # noqa: N811
 
 import freezegun
@@ -12,7 +12,7 @@ from diracx.db.sql.utils import uuid7_from_datetime, uuid7_to_datetime
 
 def frozen_uuid7() -> UUID:
     """Create a UUID7 in a way which respects the freezegun context."""
-    timestamp = datetime.now(tz=timezone.utc).timestamp()
+    timestamp = datetime.now(tz=UTC).timestamp()
     return uuid7(int(timestamp), int((timestamp % 1) * 1e9))
 
 
@@ -40,8 +40,8 @@ class TestUuid7ToDatetime:
         """Test that the uuid7 function returns a UUID7 with the current timestamp."""
         test_uuid = frozen_uuid7()
         result = uuid7_to_datetime(test_uuid)
-        assert result.tzinfo == timezone.utc
-        assert result - datetime.now(tz=timezone.utc) < timedelta(milliseconds=2)
+        assert result.tzinfo == UTC
+        assert result - datetime.now(tz=UTC) < timedelta(milliseconds=2)
 
     @freezegun.freeze_time("2024-01-15 12:30:45.123456")
     def test_uuid7_to_datetime_with_uuid_utils_uuid(self):
@@ -50,7 +50,7 @@ class TestUuid7ToDatetime:
         result = uuid7_to_datetime(test_uuid)
 
         assert isinstance(result, datetime)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
         assert result.isoformat() == "2024-01-15T12:30:45.123000+00:00"
 
     @freezegun.freeze_time("2024-01-15 12:30:45.123456")
@@ -61,7 +61,7 @@ class TestUuid7ToDatetime:
 
         result = uuid7_to_datetime(stdlib_uuid)
         assert isinstance(result, datetime)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
 
     @freezegun.freeze_time("2024-01-15 12:30:45.123456")
     def test_uuid7_to_datetime_with_string_uuid(self):
@@ -71,7 +71,7 @@ class TestUuid7ToDatetime:
 
         result = uuid7_to_datetime(uuid_string)
         assert isinstance(result, datetime)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
 
     @freezegun.freeze_time("2024-01-15 12:30:45.123456")
     def test_uuid7_to_datetime_precision(self):
@@ -80,7 +80,7 @@ class TestUuid7ToDatetime:
         result = uuid7_to_datetime(test_uuid)
 
         assert isinstance(result, datetime)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
         assert result.isoformat() == "2024-01-15T12:30:45.123000+00:00"
 
     @freezegun.freeze_time("1970-01-01 00:00:00.000000")
@@ -90,7 +90,7 @@ class TestUuid7ToDatetime:
         result = uuid7_to_datetime(test_uuid)
 
         assert isinstance(result, datetime)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
         assert result.isoformat() == "1970-01-01T00:00:00+00:00"
 
     @freezegun.freeze_time("2100-01-01 00:00:00.000000")
@@ -100,7 +100,7 @@ class TestUuid7ToDatetime:
         result = uuid7_to_datetime(test_uuid)
 
         assert isinstance(result, datetime)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
         assert result.isoformat() == "2100-01-01T00:00:00+00:00"
 
     @freezegun.freeze_time("2024-01-15 12:30:45.123456")
@@ -168,7 +168,7 @@ class TestUuid7ToDatetime:
 
         assert result.tzinfo is not None
 
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
 
         assert result.tzinfo.utcoffset(result) is not None
 
@@ -180,7 +180,7 @@ class TestUuid7ToDatetime:
 
         for result in results:
             assert isinstance(result, datetime)
-            assert result.tzinfo == timezone.utc
+            assert result.tzinfo == UTC
 
         timestamps = [r.timestamp() for r in results]
         assert timestamps == sorted(timestamps)
@@ -217,5 +217,5 @@ class TestUuid7ToDatetime:
         result = uuid7_to_datetime(test_uuid)
 
         assert isinstance(result, datetime)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
         assert result.isoformat() == "1970-01-01T00:00:00+00:00"

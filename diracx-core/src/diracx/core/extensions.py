@@ -7,8 +7,9 @@ __all__ = [
 ]
 
 from collections import defaultdict
+from collections.abc import Callable
 from importlib.metadata import EntryPoint, entry_points
-from typing import Callable, ParamSpec, TypeVar, cast
+from typing import ParamSpec, TypeVar, cast
 
 from cachetools import LRUCache, cached
 

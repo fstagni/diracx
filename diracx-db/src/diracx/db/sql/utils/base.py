@@ -7,7 +7,7 @@ import re
 from abc import ABCMeta
 from collections.abc import AsyncIterator
 from contextvars import ContextVar
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Self, cast
 from uuid import UUID as StdUUID  # noqa: N811
 
@@ -106,7 +106,7 @@ class BaseSQLDB(metaclass=ABCMeta):
         self._engine: AsyncEngine | None = None
 
     @classmethod
-    def available_implementations(cls, db_name: str) -> list[type["BaseSQLDB"]]:
+    def available_implementations(cls, db_name: str) -> list[type[BaseSQLDB]]:
         """Return the available implementations of the DB in reverse priority order."""
         db_classes: list[type[BaseSQLDB]] = [
             entry_point.load()
@@ -435,7 +435,7 @@ def uuid7_to_datetime(uuid: UUID | StdUUID | str) -> datetime:
         uuid = UUID(uuid)
     if uuid.version != 7:
         raise ValueError(f"UUID {uuid} is not a UUIDv7")
-    return datetime.fromtimestamp(uuid.timestamp / 1000.0, tz=timezone.utc)
+    return datetime.fromtimestamp(uuid.timestamp / 1000.0, tz=UTC)
 
 
 def uuid7_from_datetime(dt: datetime, *, randomize: bool = True) -> UUID:

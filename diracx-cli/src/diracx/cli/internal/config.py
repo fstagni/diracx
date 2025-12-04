@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import git
 import typer
@@ -67,7 +67,7 @@ def add_vo(
     config_repo: str,
     *,
     vo: Annotated[str, typer.Option()],
-    default_group: Optional[str] = "user",
+    default_group: str | None = "user",
     idp_url: Annotated[str, typer.Option()],
     idp_client_id: Annotated[str, typer.Option()],
 ):
@@ -138,7 +138,7 @@ def add_user(
     config_repo: str,
     *,
     vo: Annotated[str, typer.Option()],
-    groups: Annotated[Optional[list[str]], typer.Option("--group")] = None,
+    groups: Annotated[list[str] | None, typer.Option("--group")] = None,
     sub: Annotated[str, typer.Option()],
     preferred_username: Annotated[str, typer.Option()],
 ):

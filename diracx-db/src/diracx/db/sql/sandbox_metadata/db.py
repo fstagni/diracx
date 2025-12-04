@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import Any, AsyncGenerator
+from typing import Any
 
 from sqlalchemy import (
     BigInteger,

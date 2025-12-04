@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 import sqlalchemy
@@ -113,7 +113,7 @@ async def test_patch_metadata_updates_attributes_and_parameters(
     - Non identified Metadata (does_not_exist)
     and verify correct persistence in the two backends.
     """
-    hbt = datetime.now(timezone.utc)
+    hbt = datetime.now(UTC)
 
     metadata = {
         "UserPriority": "2",  # attr

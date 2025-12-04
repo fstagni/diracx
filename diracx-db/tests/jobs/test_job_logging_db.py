@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -18,9 +18,9 @@ async def job_logging_db():
 
 
 async def test_insert_records(job_logging_db: JobLoggingDB):
-    date_1 = datetime.now(timezone.utc) - timedelta(minutes=1)
-    date_2 = datetime.now(timezone.utc) - timedelta(seconds=1)
-    date_3 = datetime.now(timezone.utc)
+    date_1 = datetime.now(UTC) - timedelta(minutes=1)
+    date_2 = datetime.now(UTC) - timedelta(seconds=1)
+    date_3 = datetime.now(UTC)
 
     async with job_logging_db as job_logging_db:
         records = []
