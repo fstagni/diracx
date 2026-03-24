@@ -34,19 +34,6 @@ class JobStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     RESCHEDULED = "Rescheduled"
 
 
-class PilotStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
-    """PilotStatus."""
-
-    SUBMITTED = "Submitted"
-    WAITING = "Waiting"
-    RUNNING = "Running"
-    DONE = "Done"
-    FAILED = "Failed"
-    DELETED = "Deleted"
-    ABORTED = "Aborted"
-    UNKNOWN = "Unknown"
-
-
 class SandboxFormat(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """SandboxFormat."""
 

@@ -16,8 +16,6 @@ from ._models import (  # type: ignore
     BodyAuthRevokeRefreshTokenByRefreshToken,
     BodyJobsRescheduleJobs,
     BodyJobsUnassignBulkJobsSandboxes,
-    BodyPilotsAddPilotStamps,
-    BodyPilotsUpdatePilotFields,
     ExtendedMetadata,
     GroupInfo,
     HTTPValidationError,
@@ -28,7 +26,6 @@ from ._models import (  # type: ignore
     JobMetaData,
     JobStatusUpdate,
     OpenIDConfiguration,
-    PilotFieldsMapping,
     SandboxDownloadResponse,
     SandboxInfo,
     SandboxUploadResponse,
@@ -51,7 +48,6 @@ from ._models import (  # type: ignore
 from ._enums import (  # type: ignore
     ChecksumAlgorithm,
     JobStatus,
-    PilotStatus,
     SandboxFormat,
     SandboxType,
     ScalarSearchOperator,
@@ -67,8 +63,6 @@ __all__ = [
     "BodyAuthRevokeRefreshTokenByRefreshToken",
     "BodyJobsRescheduleJobs",
     "BodyJobsUnassignBulkJobsSandboxes",
-    "BodyPilotsAddPilotStamps",
-    "BodyPilotsUpdatePilotFields",
     "ExtendedMetadata",
     "GroupInfo",
     "HTTPValidationError",
@@ -79,7 +73,6 @@ __all__ = [
     "JobMetaData",
     "JobStatusUpdate",
     "OpenIDConfiguration",
-    "PilotFieldsMapping",
     "SandboxDownloadResponse",
     "SandboxInfo",
     "SandboxUploadResponse",
@@ -99,7 +92,6 @@ __all__ = [
     "VectorSearchSpec",
     "ChecksumAlgorithm",
     "JobStatus",
-    "PilotStatus",
     "SandboxFormat",
     "SandboxType",
     "ScalarSearchOperator",
@@ -108,8 +100,3 @@ __all__ = [
 ]
 __all__.extend([p for p in _patch_all if p not in __all__])  # pyright: ignore
 _patch_sdk()
-if TYPE_CHECKING:
-    __all__.extend(
-        [
-            "DeviceFlowErrorResponse",        ]
-    )
