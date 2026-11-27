@@ -11,7 +11,7 @@
 
 DiracX gets an **Analytics Platform**: an OLAP system that collects, stores, and analyses operational data from every domain DiracX handles — workload (jobs, pilots, transformations), data management, storage — as the successor of the DIRAC "Accounting" and "Monitoring" systems, a distinction the platform deliberately does not keep.
 
-The platform follows an **ELT** architecture: data is *extracted* from the OLTP databases, *loaded* into a **Data Lakehouse** (a DuckLake catalog over Parquet files), and *transformed* into time-bucketed aggregates for dashboard consumption. Ingestion is **pull-based** and pluggable: scheduled loaders with incremental queries are the default path, an optional event stream (Kafka API) serves installations with fan-out or multi-source needs. Consumption is two-tier: a single `/api/analytics` service with VO-scoped, server-side enforced visibility feeds generic dashboard systems (Grafana via the Infinity plugin), while power users query the lakehouse directly with DuckDB. Jobs and pilots are the first instance of the pattern; storage, data management, and transformation analytics are expected to follow it.
+The platform follows an **ELT** architecture: data is *extracted* from the OLTP databases, *loaded* into a **Data Lakehouse** (a DuckLake catalog over Parquet files), and *transformed* into time-bucketed aggregates for dashboard consumption. Ingestion is **pull-based** and pluggable: scheduled loaders with incremental queries are the default path, an optional event stream (Kafka API) serves installations with fan-out or multi-source needs, and the historic accounting record retained by DIRAC is imported once into the same sources. Consumption is two-tier: a single `/api/analytics` service with VO-scoped, server-side enforced visibility feeds generic dashboard systems (Grafana via the Infinity plugin), while power users query the lakehouse directly with DuckDB. Jobs and pilots are the first instance of the pattern; storage, data management, and transformation analytics are expected to follow it.
 
 ## Motivation
 
@@ -34,7 +34,7 @@ Further requirements captured with the community:
 - Building blocks are taken off the shelf wherever possible.
 - Concrete reporting obligations (WLCG C-RSG resource reports, LHCC reports) already fix required breakdowns — CPU per site/type/status, storage per tier and data type, weekly or yearly granularity. The catalogue of use cases collected from communities is kept as a living document outside this ADR, so the decision record stays stable as stories evolve.
 
-Legacy systems and the analytics platform coexist during migration: historical accounting and monitoring data is ingestable dump-and-restore style, while new data flows in incrementally.
+Legacy systems and the analytics platform coexist during migration: the historic accounting record is imported once into the platform (see *Historic data*), while new data flows in incrementally.
 
 The approach was presented at the 12th Dirac(X) Users' Workshop as *"Analytics in DiracX — A Comprehensive OLAP Approach"* (https://fstagni.github.io/2026_DUW_Analytics_DiracX/).
 
@@ -58,6 +58,19 @@ The lakehouse does not care *how* data is extracted — only that it arrives. Ea
 2. **Event stream (optional).** A Kafka-API log (e.g. Redpanda) between producers and the lakehouse, for installations that need fan-out to non-analytics consumers or multiple external ingestion sources contributing to the same lakehouse. Consumers commit stream offsets with the data they produce. Shipped upstream behind an extra (`aiokafka`); the producer/aggregator pattern exists in the Belle II extension and can be charted in `diracx-charts` when needed.
 
 Extensions can register additional ingestion sources; loading and reading the lakehouse from outside DiracX is supported by design (it is a DuckLake: any DuckDB client with catalog and storage credentials).
+
+### Historic data
+
+The legacy AccountingSystem retains its **raw accounting records** (the per-type `type_<type>` tables) for the whole history, so the historic record is salvageable at **full fidelity** — no coarser granularity needs to be accepted for old data. (Types may optionally define a `dataTimespan` after which raw records are pruned; where that happened, the legacy adaptive-length bucket tables are the fallback.)
+
+The salvage is a **one-off bulk import**, not a recurring loader:
+
+- Legacy raw records are moved into the corresponding sources (`jobs.accounting`, pilot records into the pilot source), stamped `origin='legacy'` — a provenance dimension every source carries (`live` for loader-collected rows).
+- Imported rows have the same schema as live rows. They carry the legacy dimension set; the enriched dimensions (tier, federation, production metadata) are Unknown on them, except where the production metadata still resolves — an implementation choice, per dimension.
+- If the import runs while the legacy system still operates, it is extended up to a cutover instant T₀; from T₀ on, only live loaders write (see Open Issues for the seam treatment).
+- Queries spanning T₀ sum both strata transparently; grouping by an enriched dimension shows the historic part as Unknown — the honest picture of "full history, richer breakdowns from the analytics era onwards".
+
+The new data is thus an **enrichment on top of** the imported history — per-record grain and richer dimensions going forward — while the historic record itself is never rewritten.
 
 ### Serving
 
@@ -113,12 +126,17 @@ DiracX runs on Kubernetes via `diracx-charts`. The loader path adds **zero new s
 - **Grafana DuckDB plugin** (direct DB dashboards): not officially supported by Grafana, requires specific images, scalability concerns.
 - **Kafka as the mandatory ingestion buffer** (the initial Belle II design): it would force a stateful service on every installation and, since events are reconstructed from full source history anyway, its ordering guarantees are redundant for correctness — while cursor-and-data-in-one-transaction loaders are strictly safer than publish-then-commit. Kept only as the optional event-stream path; a future ADR may supersede this one if fan-out demand materialises.
 - **ETL** (transform before load): raw is the source of truth; transformation happens in the lakehouse, after load.
+- **Importing legacy bucket aggregates** for the historic record: the raw accounting records were never pruned, so full-fidelity history is available; bucket rows would only add coarseness. Bucket tables remain the fallback for a type that did prune its raw records.
+- **A recurring historic-import loader**: the salvage is a one-off import; recurring machinery would duplicate the live loaders' contract for no benefit.
 
 ## Open Issues
 
 - Bucket sizes and retention windows (hourly/daily/monthly) — open to community feedback.
 - File-type / data-quality vocabulary of the storage source (RAW, DST, MC-DST, USER, BUFFER, ...) — the breakdown LHCb itself flags as undecided.
 - Unit normalisation: CPU stored as normalised seconds, with HS23 (and future recalibrations) applied as constants at query/dashboard level — confirm with C-RSG reporting practice.
+- Historic-import scope: legacy AccountingSystem first; whether the legacy monitoring record (WMSHistory in OpenSearch) is backfilled the same way into the `jobs.states` historic stratum.
+- The T₀ seam: whether the "import up to T₀, loaders from T₀" contract needs a stricter dedup rule, or the `origin` dimension as audit trail suffices.
+- Whether enriched dimensions (tier, federation, production metadata) are backfilled onto imported historic rows where the production metadata still resolves.
 - Response format evolution (JSON today; Arrow IPC streams for heavy consumers?).
 - Mechanism for designating community operator/VO-administrator roles (per-VO property vs group semantics).
 - Short-lived credential minting for power-user direct access.

@@ -30,6 +30,14 @@ _Avoid_: puller, tailer, aggregator
 The position in an OLTP source beyond which a loader has already collected data, committed in the same transaction as the data it marks.
 _Avoid_: offset (reserved for positions in the event stream)
 
+**Backfill**:
+A one-off bulk import of historic records into the lakehouse, stamped with its origin.
+_Avoid_: historic loader (it is not a loader), migration (broader)
+
+**Origin**:
+The provenance of an analytics row: backfilled from a legacy system, or collected live by a loader.
+_Avoid_: source (already taken), provenance
+
 **Event stream**:
 The optional, ordered log of domain events (Kafka API) through which installations with fan-out or multi-source needs can feed the lakehouse.
 _Avoid_: topic (that is one stream's partitioned log)
