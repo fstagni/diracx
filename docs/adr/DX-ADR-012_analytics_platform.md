@@ -32,9 +32,11 @@ Further requirements captured with the community:
 - The platform must hold, at minimum, **all the data** the legacy DIRAC accounting holds.
 - Pre-built dashboard definitions should be persisted in code.
 - Building blocks are taken off the shelf wherever possible.
-- Concrete reporting obligations (WLCG C-RSG resource reports, LHCC reports) already fix required breakdowns — CPU per site/type/status, storage per tier and data type, weekly or yearly granularity; the Specification's worked use cases trace each to a source.
+- Concrete reporting obligations (WLCG C-RSG resource reports, LHCC reports) already fix required breakdowns — CPU per site/type/status, storage per tier and data type, weekly or yearly granularity. The catalogue of use cases collected from communities is kept as a living document outside this ADR, so the decision record stays stable as stories evolve.
 
 Legacy systems and the analytics platform coexist during migration: historical accounting and monitoring data is ingestable dump-and-restore style, while new data flows in incrementally.
+
+The approach was presented at the 12th Dirac(X) Users' Workshop as *"Analytics in DiracX — A Comprehensive OLAP Approach"* (https://fstagni.github.io/2026_DUW_Analytics_DiracX/).
 
 ## Specification
 
@@ -69,26 +71,6 @@ Extensions can register additional ingestion sources; loading and reading the la
     - *Job status sources* (`jobs.transitions`, `jobs.time_in_status`, `jobs.counts`, `jobs.events`, `jobs.durations`, `jobs.states`, `jobs.pilots`): transitions reconstructed from `JobLoggingDB` history (keyed by the real `(JobID, SeqNum)` primary key); VO read per row from `Jobs.vo` / `PilotAgents.vo` (DiracX installations are multi-VO by default, single-VO being the degenerate case); pilot occupancy sampled per site/CE/status.
     - *Jobs accounting source* (`jobs.accounting`): the superset of legacy DIRAC accounting records — per-job normalised CPU, wall clock, events generated, data volumes, sandbox sizes, final major/minor status — with the production-metadata dimensions above and interval-aware bucketing (jobs spread proportionally across the buckets they overlap, which yields average parallel core usage). This is the source that carries the C-RSG/LHCC CPU reporting.
 - **Declared next instance — storage:** snapshot sources of space usage per (dataset, replica, storage element) from the replica catalog and SE accounting, with tape/disk as an SE-type dimension and dataset/replica instance counts as distinct-count metrics; popularity as its own source; externally fed endpoints (e.g. EOS non-grid space) through the outside-DiracX ingestion path.
-
-### Worked use cases
-
-Reporting obligations already define concrete questions the platform must answer (WLCG C-RSG resource reports, LHCC reports, community dashboards). Each maps onto the query model — one source, its dimensions, its metrics, a granularity — without structural extensions:
-
-| Question                                                                                           | Source                                | Key dimensions                                                                  | Metrics                                         |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Jobs finished successfully in the last 24 h, per VO                                                | `jobs.transitions`                    | vo, to_status                                                                   | n                                               |
-| Average job duration in the last 24 h, per type and VO                                             | `jobs.durations`                      | vo, job_type, outcome                                                           | avg_seconds                                     |
-| CPU power (HS23) per site, job type and final status over the previous year, weekly                | `jobs.accounting`                     | vo, site, tier\*, federation\*, job_type, job_class, final_major_status         | norm_cpu_time                                   |
-| CPU split of User jobs / analysis productions / data and simulation productions                    | `jobs.accounting`                     | processing_type, job_class, job_group                                           | all                                             |
-| Fraction of CPU wasted on failed jobs, as a function of time                                       | `jobs.accounting`                     | final_major_status                                                              | norm_cpu_time (failed / total)                  |
-| Events generated and CPU per simulation type / data-taking year / WG / event type / collision type | `jobs.accounting`                     | sim_type\*, data_taking_year\*, working_group\*, event_type\*, collision_type\* | processed_events, norm_cpu_time                 |
-| CPU cores used in parallel per site/tier and job type                                              | `jobs.accounting`                     | site, tier\*, job_type                                                          | core-seconds / bucket time (interval bucketing) |
-| Tape space (PB) at Tier-1s, RAW vs derived, weekly                                                 | `storage.space`                       | site, tier\*, se_type, file_type                                                | physical_bytes                                  |
-| Disk space (PB) by tier, per data type, data-taking year, sprucing version, analysis production    | `storage.space`                       | tier\*, file_type, data_taking_year\*, passage\*, production                    | logical_bytes, instances                        |
-| Tier-0 non-grid disk space (e.g. EOS), aggregated by type                                          | `storage.space` (external ingestion)  | site, namespace_type                                                            | logical_bytes                                   |
-| Dataset instance counts and popularity                                                             | `storage.space`, `storage.popularity` | production, dataset dimensions                                                  | instances, access counts                        |
-
-\* enriched at transform from site or production metadata (see Serving).
 
 ### Access control — VO scope
 
