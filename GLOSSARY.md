@@ -59,7 +59,7 @@ An aggregate computed over rows of a source (e.g. number of jobs, average second
 _Avoid_: value, column
 
 **Granularity**:
-The time bucket of a query result: minute, hour, day, or all.
+The time bucket of a query result: minute, hour, day, week, month, or all.
 _Avoid_: resolution, interval
 
 **Transition**:
@@ -69,6 +69,10 @@ _Avoid_: status change (verbose), event alone (ambiguous)
 **Occupancy**:
 The number of entities in each state over time, as a level; the level is the sum of every transition before a moment.
 _Avoid_: history, WMSHistory (the legacy DIRAC mechanism this replaces)
+
+**Snapshot**:
+A sampled measurement of a level at a point in time (e.g. space used on a storage element, taken daily); sources built from snapshots record levels, not events.
+_Avoid_: poll, sample dump
 
 **Power user**:
 A member of the community granted direct access to the lakehouse, querying and visualising it per-VO or per-installation without going through the DiracX API.
